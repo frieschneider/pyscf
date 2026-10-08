@@ -195,6 +195,7 @@ def to_uhf_dods(mf):
     mf1.mo_occ = numpy.array((mf.mo_occ > 0, mf.mo_occ == 2), dtype=numpy.double)
     mf1.converged = mf.converged
     mf1.e_tot = mf.e_tot
+    mf1._rohf = mf
     return mf1
 
 
@@ -226,5 +227,4 @@ class ROHFDoDS(rohf.ROHF):
     def run(self, *args, **kwargs):
         rohf.ROHF.run(self, *args, **kwargs)
         mf1 = self.to_uhf_dods()
-        mf1._rohf = self
         return mf1

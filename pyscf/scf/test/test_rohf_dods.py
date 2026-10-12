@@ -117,6 +117,26 @@ class KnownValues(unittest.TestCase):
         self.assertTrue(numpy.allclose(dma_ref, dma_new, atol=1e-8))
         self.assertTrue(numpy.allclose(dmb_ref, dmb_new, atol=1e-8))
 
+    def test_variant_dispatch(self):
+        mf = rohf_dods.ROHFDoDS(mol)
+        mf.conv_tol = 1e-11
+        mf.kernel()
+
+        # default/explicit 'canonical' both work
+        mf.to_uhf_dods()
+        mf.to_uhf_dods(variant='canonical')
+
+        # 'semicanonical' -- alpha (closed+open merged)/virtual, beta
+        # closed/(open+virtual merged). Density must still match plain ROHF.
+        mf1 = mf.to_uhf_dods(variant='semicanonical')
+        dma_ref, dmb_ref = mf.make_rdm1()
+        dma_new, dmb_new = mf1.make_rdm1()
+        self.assertTrue(numpy.allclose(dma_ref, dma_new, atol=1e-8))
+        self.assertTrue(numpy.allclose(dmb_ref, dmb_new, atol=1e-8))
+
+        with self.assertRaises(ValueError):
+            mf.to_uhf_dods(variant='bogus')
+
     def test_dods_energy_recomputed_matches_rohf(self):
         mf1 = rohf_dods.ROHFDoDS(mol).run(conv_tol=1e-11)
 
